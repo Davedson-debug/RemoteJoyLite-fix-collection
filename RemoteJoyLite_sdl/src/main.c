@@ -70,7 +70,7 @@ static int usbCheckDevice(void)
   }
   int mag = HOSTFS_MAGIC;
   int len = 0;
-  int ret = libusb_bulk_transfer(gUsbDev, EP_OUT, (char *)&mag, 4, &len, 1000);
+  int ret = libusb_bulk_transfer(gUsbDev, EP_OUT, (unsigned char *)&mag, 4, &len, 1000);
   if (len == 4)
   {
     return 0;
@@ -165,7 +165,7 @@ static void sendEvent(int type, uint32_t value1, uint32_t value2)
   data.event.value1  = value1;
   data.event.value2  = value2;
   int len            = 0;
-  ret                = libusb_bulk_transfer(gUsbDev, EP_OUT_EVENT, (char *)&data, sizeof(data), &len, 10000);
+  ret                = libusb_bulk_transfer(gUsbDev, EP_OUT_EVENT, (unsigned char *)&data, sizeof(data), &len, 10000);
   if (ret < 0)
   {
     return;
@@ -203,7 +203,7 @@ static void handleHello(void)
   Resp.cmd.magic   = HOSTFS_MAGIC;
   Resp.cmd.command = HOSTFS_CMD_HELLO(RJL_VERSION);
   int len          = 0;
-  ret              = libusb_bulk_transfer(gUsbDev, EP_OUT, (char *)&Resp, sizeof(Resp), &len, 10000);
+  ret              = libusb_bulk_transfer(gUsbDev, EP_OUT, (unsigned char *)&Resp, sizeof(Resp), &len, 10000);
   if (ret < 0)
   {
     return;
@@ -273,7 +273,7 @@ static void doBulk(void *read, int read_len)
       rest_size = HOSTFS_MAX_BLOCK;
     }
     int len = 0;
-    int ret = libusb_bulk_transfer(gUsbDev, EP_IN, &gBulkBlock[read_size], rest_size, &len, 3000);
+    int ret = libusb_bulk_transfer(gUsbDev, EP_IN, (unsigned char *)&gBulkBlock[read_size], rest_size, &len, 3000);
 
     if (ret == LIBUSB_ERROR_TIMEOUT)
     {
@@ -303,7 +303,7 @@ static int UsbThread(void *ptr)
       {
         uint32_t data[512 / sizeof(uint32_t)];
         int len = 0;
-        int ret = libusb_bulk_transfer(gUsbDev, EP_IN, (char *)data, 512, &len, 1000);
+        int ret = libusb_bulk_transfer(gUsbDev, EP_IN, (unsigned char *)data, 512, &len, 1000);
         if (ret == LIBUSB_ERROR_TIMEOUT)
         {
           continue;
@@ -457,7 +457,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
   SDL_SetAppMetadata("RemoteJoyLite", "0.19", "com.psparchive.rjl");
 
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD) < 0)
+  if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD))
     return -1;
 
   SDL_CreateWindowAndRenderer("RemoteJoyLite", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE, &gWindow, &gRenderer);
